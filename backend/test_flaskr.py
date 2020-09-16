@@ -43,11 +43,11 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(len(data['categories']), 6)
 
     def test_get_no_categories(self):
-        res = self.client().get('/categories')
+        res = self.client().post('/categories')
         data = json.loads(res.data)
 
-        self.assertEqual(res.status_code, 404)
-        self.assertEqual(data['message'], 'Not found')
+        self.assertEqual(res.status_code, 405)
+        self.assertEqual(data['message'], 'Method not allowed')
 
     def test_get_questions(self):
         res = self.client().get('/questions?page=1')
@@ -68,11 +68,13 @@ class TriviaTestCase(unittest.TestCase):
     def test_delete_question(self):
         questions = Question.query.all()
         questions_ids = [question.id for question in questions]
-        res = self.client().delete('/questions/{}'.format(random.choice(questions_ids)))
+        question_id = random.choice(questions_ids)
+        res = self.client().delete('/questions/{}'.format(question_id))
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['message'], 'delete')
+        self.assertEqual(data['question_id'], question_id)
 
     def test_delete_question_not_exist(self):
         res = self.client().delete('/questions/100')
