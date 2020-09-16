@@ -41,16 +41,16 @@ def create_app(test_config=None):
         try:
             queryset = Category.query.all()
             categories = {category.id: category.type for category in queryset}
-            if categories:
-                return {
-                    'success_code': 200,
-                    'message': 'success',
-                    'categories': categories,
-                }
-            else:
-                abort(404)
         except:
             abort(422)
+        if categories:
+            return jsonify({
+                'success_code': 200,
+                'message': 'success',
+                'categories': categories,
+            })
+        else:
+            abort(404)
 
     '''
     @TODO: 
@@ -83,14 +83,14 @@ def create_app(test_config=None):
             categories_formatted = {category.id: category.type for category in categories}
             categories = [Category.query.get(question.category) for question in questions]
             current_categories = {category.id: category.type for category in categories}
-            return {
+            return jsonify({
                 'success_code': 200,
                 'message': 'success',
                 'questions': questions_formatted,
                 'total_questions': len(questions),
                 'current_category': current_categories,
                 'categories': categories_formatted,
-            }
+            })
         else:
             abort(404)
 
@@ -110,10 +110,10 @@ def create_app(test_config=None):
             abort(422)
         if question:
             question.delete()
-            return {
+            return jsonify({
                 'success_code': 200,
                 'message': 'delete',
-            }
+            })
         else:
             abort(404)
 
@@ -138,11 +138,11 @@ def create_app(test_config=None):
         try:
             question = Question(question, answer, category_id, difficulty)
             question.insert()
-            return {
+            return jsonify({
                 'success_code': 200,
                 'message': 'create',
                 'question': question.format(),
-            }
+            })
         except:
             abort(422)
 
@@ -165,17 +165,17 @@ def create_app(test_config=None):
         current_categories = {category.id: category.type for category in
                               [Category.query.get(question.category) for question in questions]}
         if questions:
-            return {
+            return jsonify({
                 'success_code': 200,
                 'questions': questions_formatted,
                 'total_questions': len(questions_formatted),
                 'current_category': current_categories,
-            }
+            })
         else:
-            return {
+            return jsonify({
                 'success_code': 404,
                 'message': 'not_found',
-            }
+            })
 
     '''
     @TODO: 
@@ -191,9 +191,9 @@ def create_app(test_config=None):
         category = Category.query.get(category_id)
         questions = Question.query.filter_by(category=category.id)
         questions_formatted = [question.format() for question in questions]
-        return {
+        return jsonify({
             'questions': questions_formatted
-        }
+        })
 
     '''
     @TODO: 
@@ -218,9 +218,9 @@ def create_app(test_config=None):
                 questions = Question.query.filter(Question.category == category['id'], ~Question.id.in_(previousQuestions))
             formatted_questions = [question.format() for question in questions]
             question = random.choice(formatted_questions)
-            return {
+            return jsonify({
                 'question': question
-            }
+            })
         except:
             abort(404)
 
