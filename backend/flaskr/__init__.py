@@ -164,18 +164,17 @@ def create_app(test_config=None):
         questions_formatted = [question.format() for question in questions]
         current_categories = {category.id: category.type for category in
                               [Category.query.get(question.category) for question in questions]}
-        if questions:
+
+        if questions_formatted:
             return jsonify({
                 'success_code': 200,
+                'message': 'success',
                 'questions': questions_formatted,
                 'total_questions': len(questions_formatted),
                 'current_category': current_categories,
             })
         else:
-            return jsonify({
-                'success_code': 404,
-                'message': 'not_found',
-            })
+            abort(404)
 
     '''
     @TODO: 
@@ -189,9 +188,14 @@ def create_app(test_config=None):
     @app.route('/categories/<int:category_id>/questions')
     def category_questions(category_id):
         category = Category.query.get(category_id)
+        if not category:
+            abort(404)
         questions = Question.query.filter_by(category=category.id)
         questions_formatted = [question.format() for question in questions]
+        print(questions_formatted)
         return jsonify({
+            'success_code': 200,
+            'message': 'success',
             'questions': questions_formatted
         })
 
@@ -210,12 +214,12 @@ def create_app(test_config=None):
     @app.route('/quizzes', methods=['POST'])
     def quizzes():
         category = request.get_json().get('quiz_category')
-        previousQuestions = request.get_json().get('previous_questions')
+        previous_questions = request.get_json().get('previous_questions')
         try:
             if category['id'] == 0:
-                questions = Question.query.filter(~Question.id.in_(previousQuestions))
+                questions = Question.query.filter(~Question.id.in_(previous_questions))
             else:
-                questions = Question.query.filter(Question.category == category['id'], ~Question.id.in_(previousQuestions))
+                questions = Question.query.filter(Question.category == category['id'], ~Question.id.in_(previous_questions))
             formatted_questions = [question.format() for question in questions]
             question = random.choice(formatted_questions)
             return jsonify({
